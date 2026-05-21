@@ -4,8 +4,6 @@ import numpy as np
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
-
-# Import blok bangunan Keras
 from tensorflow.keras.applications import VGG19
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
@@ -21,10 +19,9 @@ app.add_middleware(
 )
 
 MODEL_PATH = "ceramic_tiles_4class_bs16_lr0.01_epoch50_do0.1.h5" 
-CLASS_LABELS = ["stain", "scratch", "normal", "crack"]  
-
+CLASS_LABELS = ["crack", "normal", "scratch", "stain"]
 try:
-    print("Membangun ulang arsitektur Sequential (Kotak dalam kotak)...")
+    print("Membangun ulang arsitektur Sequential...")
     
     base_model = VGG19(input_shape=(224, 224, 3), include_top=False, weights=None)
     

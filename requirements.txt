@@ -4,3 +4,6 @@ numpy
 Pillow
 tensorflow-cpu
 python-multipart
+protobuf<5.0.0
+grpcio==1.62.1
+grpcio-tools==1.62.1

@@ -32,4 +32,4 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             cd /root/ceramic-scanner
-            docker compose up -d --build python-worker
+            docker compose up -d --build --no-deps --force-recreate python-worker

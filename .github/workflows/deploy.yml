@@ -1,4 +1,4 @@
-﻿name: Deploy Python Microservice
+name: Deploy Python Microservice
 
 on:
   push:
@@ -21,7 +21,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "app.py,Dockerfile,requirements.txt"
+          source: "app.py,grpc_server.py,ceramic.proto,ceramic_pb2.py,ceramic_pb2_grpc.py,Dockerfile,requirements.txt"
           target: "/root/ceramic-scanner/python-service"
 
       - name: Restart Python Container

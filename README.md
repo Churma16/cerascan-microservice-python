@@ -1,65 +1,87 @@
-# CeraScan ML Microservice
+# CeraScan: Python Machine Learning Service
 
-[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)](https://python.org) [![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-FF6F00?logo=tensorflow&logoColor=white)](https://tensorflow.org) [![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/Python-3.9+-3776AB?logo=python&logoColor=white)](https://python.org)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-2.x-FF6F00?logo=tensorflow&logoColor=white)](https://tensorflow.org)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 
-A dedicated Python machine learning microservice for the CeraScan ecosystem. It performs real-time image classification on ceramic tiles, categorizing them into normal surfaces or specific defect types utilizing a customized VGG19 Convolutional Neural Network.
-
----
-
-## Key Features
-
-*   **High-Accuracy Inference**: Leverages a robust, fine-tuned VGG19 CNN (`models/ceramic_defect_vgg19.h5`) for 4-class categorization (Crack, Scratch, Stain, Normal).
-*   **gRPC Communication**: Provides lightning-fast, highly efficient inference endpoints for the main Express API Gateway.
-*   **Container-Ready**: Designed to operate seamlessly as a background worker within Dockerized environments.
+This service classifies ceramic tile defects using a fine-tuned VGG19 convolutional neural network. It serves predictions to the Express backend over gRPC on port 50051 and also provides a standalone FastAPI endpoint for local HTTP testing.
 
 ---
 
-## Tech Stack & Libraries
+## Defects Detected
 
-*   **Language**: Python
-*   **Machine Learning**: TensorFlow / Keras
-*   **RPC Framework**: gRPC
-*   **Containerization**: Docker
+The model sorts tile images into four surface conditions:
+
+* Normal (defect-free surface)
+* Crack
+* Scratch
+* Stain
 
 ---
 
-## Installation & Setup
+## Setup and Installation
+
+### Prerequisites
+
+* Python 3.9 or higher
+* Virtual environment (recommended)
 
 ### Steps
 
-#### Prerequisites
-*   Python >= 3.9
+1. Create and activate a virtual environment:
+   ```bash
+   python -m venv venv
+   # On Windows PowerShell:
+   .\venv\Scripts\Activate.ps1
+   # On Linux / macOS:
+   source venv/bin/activate
+   ```
 
-1.  **Install Dependencies**:
-    ```bash
-    pip install -r requirements.txt
-    ```
-2.  **Run the gRPC Server**:
-    ```bash
-    python grpc_server.py
-    ```
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-*(Note: The required `.h5` model file must be present at `models/ceramic_defect_vgg19.h5` or configured via the `MODEL_PATH` environment variable for the server to successfully load and serve predictions.)*
-
----
-
-## Folder Structure
-
-*   `app.py` - Standard script (if applicable) for testing or alternate serving.
-*   `grpc_server.py` - Main gRPC server initializing the model and listening for client requests.
-*   `ceramic_pb2*.py` - Auto-generated Protobuf files defining the gRPC interface.
+3. Ensure the trained model file is in place:
+   ```
+   models/ceramic_defect_vgg19.h5
+   ```
+   *(You can override this path by setting the `MODEL_PATH` environment variable).*
 
 ---
 
-## Acknowledgements
+## Running the Service
 
-Special thanks and appreciation to the researchers and institutions for the foundational work in industrial computer vision.
+### Option A: gRPC Server (Default for CeraScan)
+
+Start the gRPC server to accept inference requests from the Express backend:
+
+```bash
+python grpc_server.py
+```
+
+The server listens on port `50051`.
+
+### Option B: FastAPI HTTP Server (Testing / Standalone)
+
+Run the FastAPI server to test predictions directly via HTTP:
+
+```bash
+uvicorn app:app --reload --port 8000
+```
+
+Swagger UI documentation becomes available at `http://localhost:8000/docs`.
 
 ---
 
-## Author
+## File Structure
 
-**Churma16**
+* `grpc_server.py`: Main gRPC server listening for RPC classification requests.
+* `inference_service.py`: Loads the Keras model and preprocesses tile images.
+* `app.py`: Standalone FastAPI server for direct HTTP testing (`POST /predict`).
+* `ceramic.proto`: Protobuf contract defining the inference service and messages.
+* `ceramic_pb2.py` / `ceramic_pb2_grpc.py`: Generated Protobuf and gRPC stubs.
+* `models/`: Directory holding the saved `.h5` model file.
 
 ---
 

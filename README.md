@@ -8,7 +8,7 @@ A dedicated Python machine learning microservice for the CeraScan ecosystem. It 
 
 ## Key Features
 
-*   **High-Accuracy Inference**: Leverages a robust, fine-tuned VGG19 CNN (`ceramic_tiles_4class_bs16_lr0.01_epoch50_do0.1.h5`) for 4-class categorization (Crack, Scratch, Stain, Normal).
+*   **High-Accuracy Inference**: Leverages a robust, fine-tuned VGG19 CNN (`models/ceramic_defect_vgg19.h5`) for 4-class categorization (Crack, Scratch, Stain, Normal).
 *   **gRPC Communication**: Provides lightning-fast, highly efficient inference endpoints for the main Express API Gateway.
 *   **Container-Ready**: Designed to operate seamlessly as a background worker within Dockerized environments.
 
@@ -39,7 +39,7 @@ A dedicated Python machine learning microservice for the CeraScan ecosystem. It 
     python grpc_server.py
     ```
 
-*(Note: The required `.h5` model file must be present in the root of this directory for the server to successfully load and serve predictions.)*
+*(Note: The required `.h5` model file must be present at `models/ceramic_defect_vgg19.h5` or configured via the `MODEL_PATH` environment variable for the server to successfully load and serve predictions.)*
 
 ---
 

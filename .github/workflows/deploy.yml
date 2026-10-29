@@ -4,34 +4,57 @@ on:
   push:
     branches:
       - main
+    tags:
+      - 'v*'
     paths-ignore:
       - 'README.md'
-
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
+    name: Build Image and Deploy to VPS
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Deploy Files to VPS
-        uses: appleboy/scp-action@v0.1.7
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
         with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USERNAME }}
-          key: ${{ secrets.VPS_SSH_KEY }}
-          source: "app.py,grpc_server.py,ceramic.proto,ceramic_pb2.py,ceramic_pb2_grpc.py,Dockerfile,requirements.txt"
-          target: "/root/ceramic-scanner/python-service"
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Restart Python Container
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
         with:
+          context: .
+          push: true
+          tags: |
+            ghcr.io/churma16/cerascan-microservice-python:${{ github.sha }}
+            ghcr.io/churma16/cerascan-microservice-python:latest
+
+      - name: Activate Service on VPS
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          IMAGE_TAG: "ghcr.io/churma16/cerascan-microservice-python:${{ github.sha }}"
+        with:
+          envs: IMAGE_TAG
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /root/ceramic-scanner
-            docker compose up -d --build --no-deps --force-recreate python-worker
+            set -euo pipefail
+            DEPLOY_PATH="/root/cerascan-deployment"
+            if [ -d "$DEPLOY_PATH/scripts" ]; then
+              cd "$DEPLOY_PATH"
+              ./scripts/deploy.sh python-worker "$IMAGE_TAG"
+            else
+              echo "[info] $DEPLOY_PATH not yet cloned on VPS. Skipping container restart until infra is deployed."
+            fi

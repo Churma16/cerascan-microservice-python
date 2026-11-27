@@ -28,7 +28,6 @@ class CeramicInferenceService:
                 self.model_file_path = configured_path
         else:
             self.model_file_path = model_file_path
-        self.model_file_path = model_file_path
         self.class_labels = ["crack", "normal", "scratch", "stain"]
         self.model = self._load_model()
 

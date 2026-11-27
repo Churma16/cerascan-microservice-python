@@ -8,8 +8,26 @@ from tensorflow.keras.layers import Dense, GlobalAveragePooling2D, Dropout
 
 
 class CeramicInferenceService:
-    def __init__(self, model_file_path: str = "ceramic_tiles_4class_bs16_lr0.01_epoch50_do0.1.h5"):
-        self.model_file_path = model_file_path
+    def __init__(self, model_file_path: str = None):
+        base_directory = os.path.dirname(os.path.abspath(__file__))
+        default_relative_path = os.path.join("models", "ceramic_defect_vgg19.h5")
+        legacy_relative_path = "ceramic_tiles_4class_bs16_lr0.01_epoch50_do0.1.h5"
+
+        if model_file_path is None:
+            configured_path = os.getenv("MODEL_PATH", default_relative_path)
+            resolved_configured_path = (
+                os.path.join(base_directory, configured_path)
+                if not os.path.isabs(configured_path)
+                else configured_path
+            )
+            resolved_legacy_path = os.path.join(base_directory, legacy_relative_path)
+
+            if not os.path.exists(resolved_configured_path) and os.path.exists(resolved_legacy_path):
+                self.model_file_path = legacy_relative_path
+            else:
+                self.model_file_path = configured_path
+        else:
+            self.model_file_path = model_file_path
         self.class_labels = ["crack", "normal", "scratch", "stain"]
         self.model = self._load_model()
 

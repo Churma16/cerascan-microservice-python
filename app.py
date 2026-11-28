@@ -1,9 +1,13 @@
+import asyncio
+import concurrent.futures
 import uvicorn
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from inference_service import inference_service
 
 app = FastAPI(title="Ceramic Defect Scanner API")
+
+executor = concurrent.futures.ThreadPoolExecutor(max_workers=10)
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,7 +28,8 @@ async def predict_ceramic(file: UploadFile = File(...)):
 
     try:
         file_contents = await file.read()
-        prediction_result = inference_service.predict(file_contents)
+        loop = asyncio.get_event_loop()
+        prediction_result = await loop.run_in_executor(executor, inference_service.predict, file_contents)
 
         return {
             "status": "success",
